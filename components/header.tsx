@@ -1,12 +1,17 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter, usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,11 +21,33 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    setIsMobileMenuOpen(false)
+
+    const scrollToContact = () => {
+      const contactSection = document.getElementById("contact")
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+    }
+
+    // If already on homepage, just scroll
+    if (pathname === "/") {
+      scrollToContact()
+    } else {
+      // Navigate to homepage first, then scroll
+      router.push("/")
+      // Wait for navigation to complete before scrolling
+      setTimeout(scrollToContact, 100)
+    }
+  }
+
   const navItems = [
-    { label: "Accueil", href: "#accueil" },
+    { label: "Accueil", href: "/" },
     { label: "SUPFINANCE", href: "https://supfinance.com", external: true },
     { label: "À propos de nous", href: "/a-propos-de-nous" },
-    { label: "Contact", href: "#contact" },
+    { label: "Contact", href: "/#contact", isContact: true },
     { label: "Mentions légales", href: "/mentions-legales" },
   ]
 
@@ -34,7 +61,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link
-            href="#accueil"
+            href="/"
             className="text-2xl font-serif font-bold text-primary hover:text-primary-light transition-colors"
           >
             FIRST INSTITUTE
@@ -50,6 +77,16 @@ export default function Header() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-medium text-text hover:text-primary transition-colors relative group"
+                >
+                  {item.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                </a>
+              ) : item.isContact ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={handleContactClick}
+                  className="text-sm font-medium text-text hover:text-primary transition-colors relative group cursor-pointer"
                 >
                   {item.label}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
@@ -89,6 +126,15 @@ export default function Header() {
                   rel="noopener noreferrer"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block py-3 text-text hover:text-primary transition-colors"
+                >
+                  {item.label}
+                </a>
+              ) : item.isContact ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={handleContactClick}
+                  className="block py-3 text-text hover:text-primary transition-colors cursor-pointer"
                 >
                   {item.label}
                 </a>
