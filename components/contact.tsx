@@ -1,12 +1,15 @@
-"use client"
+"use client";
 
-import { Mail, Phone, MapPin } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
+import { Mail, Phone, MapPin, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { useForm, ValidationError } from "@formspree/react";
 
 export default function Contact() {
+  const [state, handleSubmit] = useForm("xanpwndb"); // <-- ton ID Formspree
+
   return (
     <section id="contact" className="py-24 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,52 +82,71 @@ export default function Contact() {
             {/* Contact Form */}
             <Card className="border-border">
               <CardContent className="p-6">
-                <form className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="firstName" className="block text-sm font-medium text-text mb-2">
-                        Prénom
-                      </label>
-                      <Input id="firstName" placeholder="Votre prénom" required />
+                {state.succeeded ? (
+                  <div className="flex flex-col items-center text-center gap-3 py-12">
+                    <CheckCircle className="w-12 h-12 text-primary" />
+                    <h3 className="text-2xl font-semibold">Merci !</h3>
+                    <p className="text-text-light">Votre message a bien été envoyé. Nous vous répondons au plus vite.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Honeypot anti-spam (champ caché) */}
+                    <input type="text" name="_gotcha" className="hidden" tabIndex={-1} autoComplete="off" />
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="firstName" className="block text-sm font-medium text-text mb-2">
+                          Prénom
+                        </label>
+                        <Input id="firstName" name="firstName" placeholder="Votre prénom" required />
+                      </div>
+                      <div>
+                        <label htmlFor="lastName" className="block text-sm font-medium text-text mb-2">
+                          Nom
+                        </label>
+                        <Input id="lastName" name="lastName" placeholder="Votre nom" required />
+                      </div>
                     </div>
+
                     <div>
-                      <label htmlFor="lastName" className="block text-sm font-medium text-text mb-2">
-                        Nom
+                      <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
+                        Email
                       </label>
-                      <Input id="lastName" placeholder="Votre nom" required />
+                      <Input id="email" name="email" type="email" placeholder="votre@email.com" required />
+                      <ValidationError prefix="Email" field="email" errors={state.errors} />
                     </div>
-                  </div>
 
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
-                      Email
-                    </label>
-                    <Input id="email" type="email" placeholder="votre@email.com" required />
-                  </div>
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-text mb-2">
+                        Téléphone
+                      </label>
+                      <Input id="phone" name="phone" type="tel" placeholder="+33 6 00 00 00 00" />
+                    </div>
 
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-text mb-2">
-                      Téléphone
-                    </label>
-                    <Input id="phone" type="tel" placeholder="+33 6 00 00 00 00" />
-                  </div>
+                    <div>
+                      <label htmlFor="message" className="block text-sm font-medium text-text mb-2">
+                        Message
+                      </label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        placeholder="Décrivez votre projet ou vos besoins..."
+                        rows={5}
+                        required
+                      />
+                      <ValidationError prefix="Message" field="message" errors={state.errors} />
+                    </div>
 
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-text mb-2">
-                      Message
-                    </label>
-                    <Textarea id="message" placeholder="Décrivez votre projet ou vos besoins..." rows={5} required />
-                  </div>
-
-                  <Button type="submit" className="w-full" size="lg">
-                    Envoyer le message
-                  </Button>
-                </form>
+                    <Button type="submit" className="w-full" size="lg" disabled={state.submitting}>
+                      {state.submitting ? "Envoi en cours..." : "Envoyer le message"}
+                    </Button>
+                  </form>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }
